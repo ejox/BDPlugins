@@ -19,8 +19,8 @@ module.exports = (() => {
       version: "0.0.1",
       description:
         "Lets you stay alone in a call for longer than 5 minutes.",
-      github: "",
-      github_raw: "",
+      github: "https://github.com/ejox/BDPlugins/blob/main/DisableCallTimeout.plugin.js",
+      github_raw: "https://raw.githubusercontent.com/ejox/BDPlugins/main/DisableCallTimeout.plugin.js",
     },
     changelog: [
       {
