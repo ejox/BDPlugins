@@ -19,8 +19,8 @@ module.exports = (() => {
       version: "0.0.1",
       description:
         "Lets you stay alone in a call for longer than 5 minutes.",
-      github: "https://github.com/ejox/BDPlugins/blob/main/DisableCallTimeout.plugin.js",
-      github_raw: "https://raw.githubusercontent.com/ejox/BDPlugins/main/DisableCallTimeout.plugin.js",
+      github: "",
+      github_raw: "",
     },
     changelog: [
       {
@@ -92,22 +92,40 @@ module.exports = (() => {
     start() { }
     stop() { }
   }
-  return RequiredLibs.some(m => !window.hasOwnProperty(m.window))
+    return RequiredLibs.some(m => !window.hasOwnProperty(m.window))
     ? handleMissingLibrarys
     : (([Plugin, ZLibrary]) => {
       const {
+        Utilities,
+        Logger,
+        PluginUpdater,
         Patcher,
+        Settings: { SettingPanel, Switch, },
+        DiscordModules: {},
       } = ZLibrary;
+      const {
+        LibraryUtils,
+        LibraryModules: {
+          Timeout      
+        },
+      } = BunnyLib.build(config);      
       const defaultSettings = {
         bandwidth: true,
       };
-      return class DisableCallTimeout extends Plugin {
-		onStart() {
-          this.checkForUpdates();
+      return class DiscordBypasses extends Plugin {
+        constructor() {
+          super();
+          this.settings = Utilities.loadData(
+            config.info.name,
+            "settings",
+            defaultSettings
+          );
+        }
+        onStart() {
           this.initialize();
         }
         initialize() {
-          if (this.settings["bandwidth"]) this.patchTimeouts();      
+          if (this.settings["bandwidth"]) this.patchTimeouts();    
         }
         patchTimeouts() {
           Patcher.after(Timeout.prototype, "start", (timeout, [_, args]) => {
@@ -116,6 +134,28 @@ module.exports = (() => {
             }
           });
         }
+        onStop() {
+          Patcher.unpatchAll();
+        }
+        getSettingsPanel() {
+          return SettingPanel.build(
+            this.saveSettings.bind(this),
+			new Switch(
+              "Call timeout",
+              "Lets you stay alone in a call for longer than 5 minutes.",
+              this.settings["bandwidth"],
+              (e) => {
+                this.settings["bandwidth"] = e;
+              },
+            )
+          );
+        }
+        saveSettings() {
+          Utilities.saveData(config.info.name, "settings", this.settings);
+          this.stop();
+          this.initialize();
+        }
       };
     })(ZLibrary.buildPlugin(config));
 })();
+/*@end@*/
